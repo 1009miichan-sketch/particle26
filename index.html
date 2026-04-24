@@ -1,430 +1,300 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>はらぺこあおむしカーソル</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      cursor: none;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25), transparent 18%),
-        radial-gradient(circle at 80% 12%, rgba(255,255,255,0.18), transparent 16%),
-        linear-gradient(180deg, #edf9e7 0%, #d8efc7 55%, #bbdfa0 100%);
-      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro RPG Magic Battle - Final</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #080810; 
+            cursor: none; /* マウスを隠して魔法の光を目立たせる */
+            user-select: none;
+        }
 
-    #scene {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
+        canvas {
+            display: block;
+            image-rendering: pixelated; /* ドット絵をくっきりさせる */
+        }
 
-    .hint {
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 16px;
-      background: rgba(255,255,255,0.8);
-      border-radius: 999px;
-      color: #35552f;
-      font-size: 14px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-      z-index: 100;
-      pointer-events: none;
-      user-select: none;
-      white-space: nowrap;
-    }
+        /* レトロなUI */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-family: 'Courier New', Courier, monospace;
+            z-index: 10;
+        }
 
-    .apple {
-      position: absolute;
-      width: 42px;
-      height: 42px;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      z-index: 40;
-      display: grid;
-      place-items: center;
-      font-size: 40px;
-      line-height: 1;
-      filter: drop-shadow(0 5px 8px rgba(0,0,0,0.14));
-      will-change: transform, left, top;
-    }
+        #status-window {
+            color: #ffffff;
+            font-size: 20px;
+            border: 3px solid #ffffff;
+            background: #000000;
+            padding: 10px 15px;
+            box-shadow: 4px 4px 0px #444;
+        }
 
-    .sparkle {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.95);
-      pointer-events: none;
-      animation: sparkleFade 650ms ease-out forwards;
-      z-index: 20;
-    }
+        #message-window {
+            color: #ffffff;
+            font-size: 14px;
+            text-shadow: 2px 2px #000;
+        }
 
-    @keyframes sparkleFade {
-      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.4); }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); }
-    }
-
-    .caterpillar {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 30;
-    }
-
-    .segment {
-      position: absolute;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: inset -4px -4px 0 rgba(0,0,0,0.06), 0 3px 0 rgba(255,255,255,0.18);
-      will-change: transform, left, top;
-    }
-
-    .head {
-      background: #de5149;
-      border: 3px solid #b53d38;
-    }
-
-    .body-dark {
-      background: #38a64a;
-      border: 3px solid #2f8b3e;
-    }
-
-    .body-light {
-      background: #84d455;
-      border: 3px solid #68ad42;
-    }
-
-    .eye {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background: #fff;
-      border-radius: 50%;
-      top: 10px;
-    }
-
-    .eye::after {
-      content: "";
-      position: absolute;
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: #111;
-      left: 2px;
-      top: 2px;
-    }
-
-    .eye.left { left: 8px; }
-    .eye.right { right: 8px; }
-
-    .nose {
-      position: absolute;
-      width: 12px;
-      height: 8px;
-      border-bottom: 2px solid #462222;
-      border-radius: 0 0 10px 10px;
-      left: 50%;
-      bottom: 7px;
-      transform: translateX(-50%);
-    }
-
-    .antenna {
-      position: absolute;
-      width: 3px;
-      height: 14px;
-      background: #5f2722;
-      top: -10px;
-      transform-origin: bottom center;
-      border-radius: 3px;
-    }
-
-    .antenna::after {
-      content: "";
-      position: absolute;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #7c332d;
-      left: 50%;
-      top: -4px;
-      transform: translateX(-50%);
-    }
-
-    .antenna.left { left: 11px; transform: rotate(-25deg); }
-    .antenna.right { right: 11px; transform: rotate(25deg); }
-  </style>
+        .red-flash {
+            color: #ff4444 !important;
+        }
+    </style>
 </head>
 <body>
-  <div id="scene">
-    <div class="hint" id="hint">カーソルのりんごを、あおむしがゆっくり追いかけます</div>
-    <div id="apple" class="apple">🍎</div>
-    <div id="caterpillar" class="caterpillar"></div>
-    <div id="gameOver" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(255,255,255,0.38);backdrop-filter:blur(4px);z-index:120;pointer-events:none;">
-      <div style="padding:20px 28px;border-radius:24px;background:rgba(255,255,255,0.88);box-shadow:0 10px 30px rgba(0,0,0,0.12);text-align:center;">
-        <div style="font-size:42px;line-height:1;margin-bottom:8px;">🍎</div>
-        <div style="font-size:28px;color:#934343;font-weight:700;">ゲームオーバー</div>
-        <div style="margin-top:8px;color:#4d5e40;font-size:15px;">りんごはぜんぶ食べられてしまいました</div>
-      </div>
+
+<div id="ui-layer">
+    <div id="message-window">
+        魔物を 浄化せよ！<br>
+        <span style="font-size: 10px;">※赤い魔弾に当たると 減点</span>
     </div>
-  </div>
+    <div id="status-window">
+        SCORE: <span id="score">0000</span>
+    </div>
+</div>
+<canvas id="canvas"></canvas>
 
-  <script>
-    (() => {
-      const scene = document.getElementById('scene');
-      const apple = document.getElementById('apple');
-      const caterpillar = document.getElementById('caterpillar');
-      const hint = document.getElementById('hint');
-      const gameOverPanel = document.getElementById('gameOver');
-      if (!scene || !apple || !caterpillar) return;
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
 
-      const configs = [
-        { size: 40, className: 'head' },
-        { size: 34, className: 'body-dark' },
-        { size: 32, className: 'body-light' },
-        { size: 30, className: 'body-dark' },
-        { size: 28, className: 'body-light' },
-        { size: 26, className: 'body-dark' },
-        { size: 24, className: 'body-light' }
-      ];
+    let particles = [];
+    let enemies = [];
+    let bullets = [];
+    let score = 0;
+    const mouse = { x: -100, y: -100 };
+    
+    // 内部解像度（低解像度でレトロ感を出す）
+    const GAME_WIDTH = 256; 
+    const GAME_HEIGHT = 224;
+    let scale = 1;
 
-      const segments = [];
-      const elements = [];
+    function resize() {
+        scale = Math.min(window.innerWidth / GAME_WIDTH, window.innerHeight / GAME_HEIGHT);
+        scale = Math.max(1, Math.floor(scale)); 
+        canvas.width = GAME_WIDTH * scale;
+        canvas.height = GAME_HEIGHT * scale;
+        ctx.scale(scale, scale);
+        ctx.imageSmoothingEnabled = false;
+    }
 
-      const mouse = {
-        x: window.innerWidth * 0.5,
-        y: window.innerHeight * 0.5
-      };
+    window.addEventListener('resize', resize);
+    resize();
 
-      let wiggle = 0;
-      let frame = 0;
-      let biteCooldown = 0;
-      let biteOpen = 0;
-      let biteFlash = 0;
-      let appleBiteSide = 1;
-      let appleHealth = 6;
-      let appleScale = 1;
-      let isGameOver = false;
+    // マウス操作
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX / scale;
+        mouse.y = e.clientY / scale;
+        // マウスの軌跡にリボンのパーティクルを生成
+        for (let i = 0; i < 4; i++) {
+            particles.push(new PixelParticle());
+        }
+    });
 
-      function clamp(v, min, max) {
-        return Math.max(min, Math.min(max, v));
-      }
+    // 魔法のパーティクル（桃色のリボン）
+    class PixelParticle {
+        constructor() {
+            this.x = mouse.x;
+            this.y = mouse.y;
+            this.speedX = (Math.random() - 0.5) * 1.5;
+            this.speedY = Math.random() * 0.8 + 0.2; 
+            const colors = ['#FF00FF', '#FF66FF', '#FFFF00', '#00FFFF'];
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+            this.size = Math.random() > 0.5 ? 2 : 3;
+            this.life = 30 + Math.random() * 10;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.life--;
+        }
+        draw() {
+            if (this.life < 10 && this.life % 2 === 0) return;
+            ctx.fillStyle = this.color;
+            ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.size, this.size);
+        }
+    }
 
-      function angleLerp(a, b, t) {
-        let diff = b - a;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        return a + diff * t;
-      }
+    // 敵の魔弾クラス
+    class EnemyBullet {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            const angle = Math.atan2(mouse.y - y, mouse.x - x);
+            this.speed = 1.1;
+            this.vx = Math.cos(angle) * this.speed;
+            this.vy = Math.sin(angle) * this.speed;
+            this.alive = true;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            // プレイヤー（マウス）との当たり判定
+            const dist = Math.sqrt((this.x - mouse.x)**2 + (this.y - mouse.y)**2);
+            if (dist < 6) {
+                this.alive = false;
+                score = Math.max(0, score - 50); // ペナルティ
+                updateScoreDisplay(true);
+            }
+            if (this.x < 0 || this.x > GAME_WIDTH || this.y < 0 || this.y > GAME_HEIGHT) this.alive = false;
+        }
+        draw() {
+            ctx.fillStyle = "#FF0000";
+            ctx.fillRect(Math.floor(this.x), Math.floor(this.y), 3, 3);
+        }
+    }
 
-      function createSegmentEl(cfg, index) {
-        const el = document.createElement('div');
-        el.className = `segment ${cfg.className}`;
-        el.style.width = `${cfg.size}px`;
-        el.style.height = `${cfg.size}px`;
+    // モンスタークラス
+    class Enemy {
+        constructor(type) {
+            this.type = type; // 'slime', 'wisp', 'mage'
+            this.width = 16;
+            this.height = 16;
+            this.x = Math.random() * (GAME_WIDTH - 20);
+            this.y = Math.random() * (GAME_HEIGHT - 100) + 40;
+            this.isHit = false;
+            this.hitTimer = 0;
+            this.alive = true;
+            this.angle = Math.random() * Math.PI * 2;
+            this.shootTimer = Math.random() * 60;
 
-        if (index === 0) {
-          const eyeL = document.createElement('div');
-          const eyeR = document.createElement('div');
-          const nose = document.createElement('div');
-          const antennaL = document.createElement('div');
-          const antennaR = document.createElement('div');
-          eyeL.className = 'eye left';
-          eyeR.className = 'eye right';
-          nose.className = 'nose';
-          antennaL.className = 'antenna left';
-          antennaR.className = 'antenna right';
-          el.append(eyeL, eyeR, nose, antennaL, antennaR);
+            if (type === 'wisp') { this.points = 250; this.speed = 1.2; }
+            else if (type === 'mage') { this.points = 500; }
+            else { this.points = 100; }
         }
 
-        caterpillar.appendChild(el);
-        return el;
-      }
+        update() {
+            if (this.isHit) {
+                this.hitTimer++;
+                if (this.hitTimer === 1) {
+                    score += this.points;
+                    updateScoreDisplay();
+                }
+                if (this.hitTimer > 20) this.alive = false;
+                return;
+            }
 
-      function init() {
-        caterpillar.innerHTML = '';
-        segments.length = 0;
-        elements.length = 0;
+            // 個別の動き
+            if (this.type === 'wisp') {
+                this.angle += 0.08;
+                this.x += Math.cos(this.angle) * 1.5;
+                this.y += Math.sin(this.angle * 0.5) * 0.8;
+            } else if (this.type === 'mage') {
+                this.shootTimer++;
+                if (this.shootTimer > 80) {
+                    bullets.push(new EnemyBullet(this.x + 8, this.y + 8));
+                    this.shootTimer = 0;
+                }
+            } else if (this.type === 'slime') {
+                this.x += Math.sin(this.angle) * 0.3;
+                this.angle += 0.02;
+            }
 
-        const startX = window.innerWidth * 0.35;
-        const startY = window.innerHeight * 0.62;
-
-        configs.forEach((cfg, index) => {
-          const el = createSegmentEl(cfg, index);
-          elements.push(el);
-          segments.push({
-            x: startX - index * 26,
-            y: startY,
-            angle: 0,
-            size: cfg.size
-          });
-        });
-      }
-
-      function spawnSparkle(x, y) {
-        const s = document.createElement('div');
-        s.className = 'sparkle';
-        s.style.left = `${x + (Math.random() - 0.5) * 18}px`;
-        s.style.top = `${y + (Math.random() - 0.5) * 18}px`;
-        scene.appendChild(s);
-        setTimeout(() => s.remove(), 640);
-      }
-
-      function updateApple() {
-        apple.style.left = `${mouse.x}px`;
-        apple.style.top = `${mouse.y}px`;
-
-        const flashScale = biteFlash > 0.001 ? 1 + biteFlash * 0.18 : 1;
-        const biteRotation = appleBiteSide * biteFlash * 8;
-        const totalScale = appleScale * flashScale;
-        apple.style.transform = `translate(-50%, -50%) scale(${totalScale}) rotate(${biteRotation}deg)`;
-        apple.style.opacity = isGameOver ? '0' : '1';
-
-        if (biteOpen > 0.03 && !isGameOver) {
-          const notchX = appleBiteSide > 0 ? 82 : 18;
-          const depth = 18 + biteOpen * 20;
-          apple.style.clipPath = `polygon(
-            50% 0%,
-            74% 6%,
-            90% 20%,
-            98% 44%,
-            92% 72%,
-            78% 92%,
-            50% 100%,
-            22% 92%,
-            8% 72%,
-            2% 44%,
-            10% 20%,
-            26% 6%,
-            ${notchX}% ${30 - biteOpen * 12}%,
-            ${notchX - appleBiteSide * depth}% 50%,
-            ${notchX}% ${70 + biteOpen * 12}%
-          )`;
-          apple.style.filter = `drop-shadow(0 5px 8px rgba(0,0,0,0.14)) brightness(${1 + biteOpen * 0.12})`;
-        } else {
-          apple.style.clipPath = 'none';
-          apple.style.filter = 'drop-shadow(0 5px 8px rgba(0,0,0,0.14))';
-        }
-      }
-
-      function updateSegments() {
-        const head = segments[0];
-        const dx = mouse.x - head.x;
-        const dy = mouse.y - head.y;
-        const distance = Math.hypot(dx, dy);
-        const desiredAngle = Math.atan2(dy, dx);
-
-        head.angle = angleLerp(head.angle, desiredAngle, 0.08);
-
-        const speed = clamp(distance * 0.018, 0.4, 2.4);
-        if (!isGameOver) {
-          head.x += Math.cos(head.angle) * speed;
-          head.y += Math.sin(head.angle) * speed;
+            // 当たり判定
+            const dx = mouse.x - (this.x + 8);
+            const dy = mouse.y - (this.y + 8);
+            if (Math.sqrt(dx * dx + dy * dy) < 13) this.isHit = true;
         }
 
-        wiggle += 0.08;
+        draw() {
+            if (this.isHit && Math.floor(this.hitTimer / 2) % 2 === 0) {
+                ctx.fillStyle = "#FFF";
+                ctx.fillRect(Math.floor(this.x), Math.floor(this.y), 16, 16);
+                return;
+            }
 
-        for (let i = 1; i < segments.length; i++) {
-          const prev = segments[i - 1];
-          const cur = segments[i];
-          const gap = (prev.size + cur.size) * 0.42;
-          const swayAmount = Math.sin(wiggle - i * 0.8) * (i < 3 ? 3.5 : 5.5);
-          const targetX = prev.x - Math.cos(prev.angle) * gap - Math.sin(prev.angle) * swayAmount;
-          const targetY = prev.y - Math.sin(prev.angle) * gap + Math.cos(prev.angle) * swayAmount;
+            const px = Math.floor(this.x);
+            const py = Math.floor(this.y);
 
-          cur.x += (targetX - cur.x) * 0.22;
-          cur.y += (targetY - cur.y) * 0.22;
+            if (this.type === 'slime') {
+                ctx.fillStyle = "#4444FF";
+                ctx.fillRect(px+4, py+12, 8, 4);
+                ctx.fillRect(px+2, py+6, 12, 6);
+                ctx.fillRect(px+7, py+2, 2, 2);
+            } else if (this.type === 'wisp') {
+                ctx.fillStyle = "#FF00FF";
+                ctx.fillRect(px+6, py+2, 4, 12);
+                ctx.fillRect(px+2, py+6, 12, 4);
+                // コア
+                ctx.fillStyle = "#FFFF99";
+                ctx.fillRect(px+7, py+7, 2, 2);
+            } else if (this.type === 'mage') {
+                ctx.fillStyle = "#9933FF";
+                ctx.fillRect(px+4, py+2, 8, 14); // 体
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(px+5, py+5, 6, 3); // 目の隠れる部分
+                ctx.fillStyle = "#FFFF00";
+                ctx.fillRect(px+6, py+6, 1, 1); // 目L
+                ctx.fillRect(px+9, py+6, 1, 1); // 目R
+            }
+        }
+    }
 
-          const aim = Math.atan2(prev.y - cur.y, prev.x - cur.x);
-          cur.angle = angleLerp(cur.angle, aim, 0.2);
+    function updateScoreDisplay(flash = false) {
+        scoreElement.innerText = score.toString().padStart(4, '0');
+        if (flash) {
+            scoreElement.classList.add('red-flash');
+            setTimeout(() => scoreElement.classList.remove('red-flash'), 200);
+        }
+    }
+
+    // 敵のスポーン管理
+    function spawnSystem() {
+        if (enemies.length < 8) {
+            const r = Math.random();
+            if (r < 0.5) enemies.push(new Enemy('slime'));
+            else if (r < 0.8) enemies.push(new Enemy('wisp'));
+            else enemies.push(new Enemy('mage'));
+        }
+    }
+    setInterval(spawnSystem, 1000);
+
+    // メインアニメーションループ
+    function animate() {
+        // 背景と残像効果
+        ctx.fillStyle = 'rgba(8, 8, 16, 0.35)';
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        // 弾の更新
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            bullets[i].update();
+            bullets[i].draw();
+            if (!bullets[i].alive) bullets.splice(i, 1);
         }
 
-        if (!isGameOver && distance < 26 && biteCooldown <= 0) {
-          biteCooldown = 36;
-          biteOpen = 1;
-          biteFlash = 1;
-          appleBiteSide = Math.cos(head.angle) >= 0 ? -1 : 1;
-          appleHealth -= 1;
-          appleScale = Math.max(0, appleHealth / 6);
-
-          if (appleHealth <= 0) {
-            isGameOver = true;
-            gameOverPanel.style.display = 'flex';
-            if (hint) hint.textContent = 'りんごがなくなりました';
-          }
+        // 敵の更新
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            enemies[i].update();
+            enemies[i].draw();
+            if (!enemies[i].alive) enemies.splice(i, 1);
         }
 
-        if (biteCooldown > 0) biteCooldown -= 1;
-        biteOpen *= 0.84;
-        biteFlash *= 0.82;
-      }
-
-      function drawSegments() {
-        for (let i = 0; i < segments.length; i++) {
-          const seg = segments[i];
-          const el = elements[i];
-          el.style.left = `${seg.x}px`;
-          el.style.top = `${seg.y}px`;
-
-          let scaleX = 1;
-          let scaleY = 1;
-          if (i === 0 && biteOpen > 0.05) {
-            scaleX = 1 + biteOpen * 0.08;
-            scaleY = 1 - biteOpen * 0.12;
-          }
-
-          el.style.transform = `translate(-50%, -50%) rotate(${seg.angle}rad) scale(${scaleX}, ${scaleY})`;
-        }
-      }
-
-      function animate() {
-        frame += 1;
-        updateApple();
-        updateSegments();
-        drawSegments();
-
-        if (!isGameOver && frame % 6 === 0) {
-          spawnSparkle(mouse.x, mouse.y);
+        // 魔法の更新
+        for (let i = particles.length - 1; i >= 0; i--) {
+            particles[i].update();
+            particles[i].draw();
+            if (particles[i].life <= 0) particles.splice(i, 1);
         }
 
         requestAnimationFrame(animate);
-      }
+    }
 
-      function updatePointerPosition(e) {
-        if (typeof e.clientX === 'number' && typeof e.clientY === 'number') {
-          mouse.x = e.clientX;
-          mouse.y = e.clientY;
-        }
-      }
-
-      window.addEventListener('mousemove', updatePointerPosition, { passive: true });
-      window.addEventListener('pointermove', updatePointerPosition, { passive: true });
-      window.addEventListener('touchmove', (e) => {
-        const t = e.touches && e.touches[0];
-        if (!t) return;
-        mouse.x = t.clientX;
-        mouse.y = t.clientY;
-      }, { passive: true });
-
-      window.addEventListener('resize', () => {
-        mouse.x = clamp(mouse.x, 0, window.innerWidth);
-        mouse.y = clamp(mouse.y, 0, window.innerHeight);
-      });
-
-      init();
-      updateApple();
-      drawSegments();
-      requestAnimationFrame(animate);
-    })();
-  </script>
+    animate();
+</script>
 </body>
 </html>
